@@ -4,7 +4,13 @@ export function About() {
       <div className="m-inner">
         <p className="m-label">01 — About</p>
         <div className="m-about-grid">
-          <img src="assets/carousel2.jpg" alt="About" className="m-about-img" />
+          <img
+            src="assets/carousel2.jpg"
+            alt="About"
+            className="m-about-img"
+            loading="lazy"
+            decoding="async"
+          />
           <div className="m-about-body">
             <div className="m-section-marker"></div>
             <h2 className="m-heading">

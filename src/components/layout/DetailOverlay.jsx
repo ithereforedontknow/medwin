@@ -32,7 +32,12 @@ export function DetailOverlay({ item, onClose, tags }) {
           <button className="m-overlay-back" onClick={onClose}>
             <ChevronLeft size={14} /> Back
           </button>
-          <img src={item.image} alt={item.title} className="m-overlay-img" />
+          <img
+            src={item.image}
+            alt={item.title}
+            className="m-overlay-img"
+            loading="lazy"
+          />
           <div className="m-overlay-cat">{item.category}</div>
           <h1 className="m-overlay-title">{item.title}</h1>
           <p className="m-overlay-body">

@@ -14,7 +14,13 @@ export function Articles({ onSelect }) {
           {articles.map((a) => (
             <div key={a.id} className="m-card" onClick={() => onSelect(a)}>
               <div style={{ overflow: "hidden" }}>
-                <img src={a.image} alt={a.title} className="m-card-img" />
+                <img
+                  src={a.image}
+                  alt={a.title}
+                  className="m-card-img"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
               <div className="m-card-body">
                 <div className="m-card-cat">{a.category}</div>

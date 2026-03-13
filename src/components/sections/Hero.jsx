@@ -32,9 +32,11 @@ export function Hero({ setActive }) {
           </div>
         </div>
         <img
-          src="assets/hero1.jpg"
+          src="assets/carousel1.jpg"
           alt="Medwin Doctolero"
           className="m-hero-img"
+          fetchPriority="high"
+          loading="eager"
         />
       </div>
     </section>
