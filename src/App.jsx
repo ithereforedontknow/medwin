@@ -1,0 +1,230 @@
+import { useState, useRef, useEffect } from "react";
+import { DetailOverlay } from "./components/layout/DetailOverlay";
+import { Footer } from "./components/layout/Footer";
+import { Nav } from "./components/layout/Nav";
+import { Hero } from "./components/sections/Hero";
+import { About } from "./components/sections/About";
+import { Projects } from "./components/sections/Projects";
+import { Gallery } from "./components/sections/Gallery";
+import { Articles } from "./components/sections/Articles";
+import { Contact } from "./components/sections/Contact";
+const injectStyles = () => {
+  const css = `
+    @import url('https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300;1,700&family=Inter:wght@300;400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #000000;
+      --white: #ffffff;
+      --off-white: #f7f7f7;
+      --light: #efefef;
+      --mid: #d0d0d0;
+      --dim: #888888;
+      --dark: #1a1a1a;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--dark); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+    /* NAV */
+    .m-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 56px;
+      background: var(--white); border-bottom: 1px solid var(--light);
+    }
+    .m-nav-brand { font-family: 'Epilogue', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -0.02em; color: var(--black); cursor: pointer; }
+    .m-nav-links { display: flex; gap: 32px; }
+    .m-nav-links button { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); background: none; border: none; cursor: pointer; transition: color 0.15s; padding: 4px 0; border-bottom: 1px solid transparent; }
+    .m-nav-links button:hover, .m-nav-links button.active { color: var(--black); border-bottom-color: var(--black); }
+    .m-nav-menu { display: none; background: none; border: none; cursor: pointer; color: var(--dark); }
+
+    /* MOBILE NAV DRAWER */
+    .m-drawer { position: fixed; inset: 0; z-index: 200; background: var(--white); display: flex; flex-direction: column; padding: 40px; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); }
+    .m-drawer.open { transform: translateX(0); }
+    .m-drawer-close { align-self: flex-end; background: none; border: none; cursor: pointer; margin-bottom: 40px; }
+    .m-drawer-links { display: flex; flex-direction: column; gap: 8px; }
+    .m-drawer-links button { font-family: 'Epilogue', sans-serif; font-size: 36px; font-weight: 700; color: var(--black); background: none; border: none; cursor: pointer; text-align: left; padding: 8px 0; border-bottom: 1px solid var(--light); letter-spacing: -0.03em; }
+
+    /* SECTIONS */
+    .m-section { min-height: 100vh; display: flex; flex-direction: column; padding-top: 56px; }
+    .m-inner { max-width: 1000px; margin: 0 auto; padding: 80px 40px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+    /* HERO */
+    .m-hero { background: var(--black); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; padding-top: 56px; }
+    .m-hero-inner { flex: 1; display: grid; grid-template-columns: 1fr 1fr; max-width: 1000px; margin: 0 auto; padding: 0 40px; width: 100%; align-items: center; gap: 60px; }
+    .m-hero-eyebrow { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 20px; }
+    .m-hero-title { font-family: 'Epilogue', sans-serif; font-size: clamp(48px, 6vw, 80px); font-weight: 900; line-height: 0.95; letter-spacing: -0.04em; color: var(--white); margin-bottom: 24px; }
+    .m-hero-title em { font-style: italic; font-weight: 300; color: var(--dim); }
+    .m-hero-body { font-size: 15px; line-height: 1.7; color: #999; max-width: 380px; margin-bottom: 32px; }
+    .m-hero-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; object-position: center; filter: grayscale(20%); }
+    .m-hero-meta { display: flex; gap: 32px; border-top: 1px solid #222; padding-top: 20px; margin-top: 20px; }
+    .m-hero-stat-num { font-family: 'Epilogue', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; color: var(--white); }
+    .m-hero-stat-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+
+    /* SECTION HEADER */
+    .m-label { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+    .m-heading { font-family: 'Epilogue', sans-serif; font-size: clamp(28px, 4vw, 48px); font-weight: 900; letter-spacing: -0.04em; color: var(--black); line-height: 1; margin-bottom: 40px; }
+    .m-heading em { font-style: italic; font-weight: 300; }
+
+    /* ABOUT */
+    .m-about-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 60px; align-items: start; }
+    .m-about-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; object-position: center; filter: grayscale(15%); }
+    .m-about-body p { font-size: 15px; line-height: 1.75; color: #555; margin-bottom: 20px; }
+    .m-about-body p:last-child { margin-bottom: 0; }
+    .m-divider { width: 40px; height: 2px; background: var(--black); margin-bottom: 24px; }
+
+    /* PROJECTS / ARTICLES GRID */
+    .m-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .m-card { background: var(--off-white); cursor: pointer; overflow: hidden; position: relative; group: true; }
+    .m-card-img { width: 100%; aspect-ratio: 4/5; object-fit: cover; object-position: center; display: block; transition: transform 0.5s cubic-bezier(0.16,1,0.3,1); filter: grayscale(10%); }
+    .m-card:hover .m-card-img { transform: scale(1.04); }
+    .m-card-body { padding: 20px 24px 24px; }
+    .m-card-cat { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+    .m-card-title { font-family: 'Epilogue', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: var(--black); margin-bottom: 6px; line-height: 1.2; }
+    .m-card-desc { font-size: 12px; line-height: 1.6; color: var(--dim); }
+    .m-card-arrow { position: absolute; top: 16px; right: 16px; opacity: 0; transition: opacity 0.2s; background: var(--black); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+    .m-card:hover .m-card-arrow { opacity: 1; }
+
+    /* GALLERY */
+    .m-gallery-main { position: relative; aspect-ratio: 16/9; overflow: hidden; margin-bottom: 2px; background: var(--light); cursor: pointer; }
+    .m-gallery-main img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.4s cubic-bezier(0.16,1,0.3,1); }
+    .m-gallery-main:hover img { transform: scale(1.02); }
+    .m-gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.9); border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+    .m-gallery-nav.left { left: 16px; }
+    .m-gallery-nav.right { right: 16px; }
+    .m-gallery-thumbs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+    .m-gallery-thumbs::-webkit-scrollbar { display: none; }
+    .m-gallery-thumb { flex-shrink: 0; width: 80px; height: 80px; object-fit: cover; object-position: center; cursor: pointer; filter: grayscale(40%); transition: filter 0.2s; opacity: 0.6; transition: opacity 0.2s, filter 0.2s; }
+    .m-gallery-thumb.active, .m-gallery-thumb:hover { filter: grayscale(0%); opacity: 1; }
+    .m-gallery-count { font-size: 10px; letter-spacing: 0.1em; color: var(--dim); margin-top: 12px; }
+
+    /* CONTACT */
+    .m-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+    .m-contact-large { font-family: 'Epilogue', sans-serif; font-size: clamp(32px, 5vw, 60px); font-weight: 900; letter-spacing: -0.04em; color: var(--black); line-height: 1.0; margin-bottom: 32px; }
+    .m-contact-large em { font-style: italic; font-weight: 300; color: var(--dim); }
+    .m-contact-item { margin-bottom: 28px; }
+    .m-contact-label { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+    .m-contact-val { font-size: 14px; color: var(--dark); line-height: 1.6; }
+    .m-contact-link { color: var(--black); text-decoration: none; font-weight: 500; border-bottom: 1px solid var(--mid); padding-bottom: 1px; transition: border-color 0.15s; }
+    .m-contact-link:hover { border-color: var(--black); }
+    .m-social-row { display: flex; gap: 12px; margin-top: 24px; }
+    .m-social-btn { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--black); border: 1.5px solid var(--black); padding: 10px 18px; text-decoration: none; transition: all 0.15s; }
+    .m-social-btn:hover { background: var(--black); color: var(--white); }
+
+    /* FOOTER */
+    .m-footer { background: var(--black); color: #555; padding: 32px 40px; display: flex; justify-content: space-between; align-items: center; }
+    .m-footer-brand { font-family: 'Epilogue', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: -0.02em; color: var(--white); }
+    .m-footer-copy { font-size: 11px; letter-spacing: 0.04em; }
+
+    /* DETAIL OVERLAY */
+    .m-overlay { position: fixed; inset: 0; z-index: 300; background: var(--white); overflow-y: auto; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16,1,0.3,1); }
+    .m-overlay.open { transform: translateX(0); }
+    .m-overlay-inner { max-width: 900px; margin: 0 auto; padding: 100px 40px 80px; }
+    .m-overlay-back { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; background: none; border: none; cursor: pointer; color: var(--dim); display: flex; align-items: center; gap: 6px; margin-bottom: 48px; transition: color 0.15s; }
+    .m-overlay-back:hover { color: var(--black); }
+    .m-overlay-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; object-position: center; margin-bottom: 40px; filter: grayscale(10%); }
+    .m-overlay-cat { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+    .m-overlay-title { font-family: 'Epilogue', sans-serif; font-size: clamp(28px, 4vw, 52px); font-weight: 900; letter-spacing: -0.04em; color: var(--black); line-height: 1.0; margin-bottom: 28px; }
+    .m-overlay-body { font-size: 16px; line-height: 1.8; color: #555; max-width: 600px; }
+    .m-overlay-tags { display: flex; gap: 8px; margin-top: 32px; flex-wrap: wrap; }
+    .m-overlay-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid var(--mid); padding: 5px 10px; color: var(--dim); }
+
+    /* FULLSCREEN LIGHTBOX */
+    .m-lightbox { position: fixed; inset: 0; z-index: 400; background: var(--black); display: flex; align-items: center; justify-content: center; }
+    .m-lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+    .m-lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--white); }
+    .m-lightbox-nav.left { left: 20px; }
+    .m-lightbox-nav.right { right: 20px; }
+    .m-lightbox-close { position: absolute; top: 20px; right: 20px; background: none; border: none; cursor: pointer; color: var(--white); }
+    .m-lightbox-counter { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 11px; letter-spacing: 0.1em; color: #666; }
+
+    /* ACTIVE SECTION INDICATOR */
+    .m-section-marker { width: 32px; height: 2px; background: var(--black); margin-bottom: 24px; }
+
+    @media (max-width: 768px) {
+      .m-nav { padding: 0 20px; }
+      .m-nav-links { display: none; }
+      .m-nav-menu { display: flex; }
+      .m-hero-inner { grid-template-columns: 1fr; gap: 40px; padding: 40px 20px; }
+      .m-hero-img { aspect-ratio: 4/5; }
+      .m-inner { padding: 60px 20px; }
+      .m-about-grid { grid-template-columns: 1fr; gap: 32px; }
+      .m-grid { grid-template-columns: 1fr; }
+      .m-contact-grid { grid-template-columns: 1fr; gap: 40px; }
+      .m-footer { flex-direction: column; gap: 12px; text-align: center; padding: 24px 20px; }
+      .m-overlay-inner { padding: 80px 20px 60px; }
+    }
+  `;
+  const style = document.createElement("style");
+  style.textContent = css;
+  document.head.appendChild(style);
+};
+
+export default function App() {
+  const [active, setActive] = useState("Home");
+  const [navOpen, setNavOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedArticle, setSelectedArticle] = useState(null);
+
+  const sectionRefs = {
+    Home: useRef(null),
+    About: useRef(null),
+    Projects: useRef(null),
+    Gallery: useRef(null),
+    Articles: useRef(null),
+    Contact: useRef(null),
+  };
+  useEffect(() => {
+    injectStyles();
+  }, []);
+
+  const handleNav = (section) => {
+    setActive(section);
+    sectionRefs[section]?.current?.scrollIntoView({ behavior: "smooth" });
+    setNavOpen(false);
+  };
+
+  return (
+    <div style={{ background: "#fff" }}>
+      <Nav
+        active={active}
+        setActive={handleNav}
+        navOpen={navOpen}
+        setNavOpen={setNavOpen}
+      />
+
+      <div ref={sectionRefs.Home}>
+        <Hero setActive={handleNav} />
+      </div>
+      <div ref={sectionRefs.About}>
+        <About />
+      </div>
+      <div ref={sectionRefs.Projects}>
+        <Projects onSelect={setSelectedProject} />
+      </div>
+      <div ref={sectionRefs.Gallery}>
+        <Gallery />
+      </div>
+      <div ref={sectionRefs.Articles}>
+        <Articles onSelect={setSelectedArticle} />
+      </div>
+      <div ref={sectionRefs.Contact}>
+        <Contact />
+      </div>
+      <Footer />
+
+      <DetailOverlay
+        item={selectedProject}
+        onClose={() => setSelectedProject(null)}
+        tags={["Editorial", "Fashion", "2025"]}
+      />
+      <DetailOverlay
+        item={selectedArticle}
+        onClose={() => setSelectedArticle(null)}
+        tags={["Personal", "Story", "2025"]}
+      />
+    </div>
+  );
+}
